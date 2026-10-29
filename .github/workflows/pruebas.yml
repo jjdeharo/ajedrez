@@ -1,0 +1,20 @@
+# Pruebas automáticas en cada cambio: partidas de prueba y accesibilidad, en Chromium, Firefox y móvil.
+name: Pruebas
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox
+      - run: npx playwright test

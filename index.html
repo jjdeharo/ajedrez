@@ -1,9 +1,31 @@
 <!DOCTYPE html>
+<!--
+  Ajedrez para dos jugadores
+  SPDX-License-Identifier: AGPL-3.0-or-later
+  Textos: CC-BY-SA-4.0
+  © 2025-2026 Juan José de Haro
+-->
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajedrez para Tablet Horizontal</title>
+    <meta name="description" content="Ajedrez para dos jugadores en el mismo dispositivo, pensado para tableta: movimientos legales, enroque, captura al paso, promoción y tablero que gira en cada turno.">
+    <meta name="author" content="Juan José de Haro">
+    <link rel="icon" href="icono.svg" type="image/svg+xml">
+    <link rel="canonical" href="https://jjdeharo.github.io/ajedrez/">
+    <link rel="license" href="https://www.gnu.org/licenses/agpl-3.0.html">
+    <!-- Vista previa al compartir (Open Graph) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://jjdeharo.github.io/ajedrez/">
+    <meta property="og:title" content="Ajedrez para dos jugadores">
+    <meta property="og:description" content="Ajedrez para dos jugadores en el mismo dispositivo, con el tablero que gira en cada turno.">
+    <meta property="og:image" content="https://jjdeharo.github.io/ajedrez/og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Tablero de ajedrez en la posición inicial">
+    <meta property="og:locale" content="es_ES">
+    <meta name="twitter:card" content="summary_large_image">
     <style>
         * {
             box-sizing: border-box;
@@ -15,7 +37,7 @@
             margin: 0;
             padding: 0;
             background-color: #333;
-            overflow: hidden;
+            overflow-x: hidden;
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -36,7 +58,7 @@
         #chessboard-container {
             position: relative;
             width: 100%;
-            max-width: 90vh;
+            max-width: min(90vh, calc(100vh - 175px));
             aspect-ratio: 1/1;
         }
         
@@ -71,6 +93,15 @@
         
         .white {
             background-color: #f0d9b5;
+        }
+
+        .pieza-blanca {
+            color: #fff;
+            text-shadow: 0 0 1px #000, 0 0 1px #000, 0 0 2px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+        }
+
+        .pieza-negra {
+            color: #000;
         }
         
         .black {
@@ -114,7 +145,7 @@
         #reset-btn {
             padding: 12px 25px;
             font-size: 1.2rem;
-            background-color: #4CAF50;
+            background-color: #2e7d32;
             color: white;
             border: none;
             border-radius: 8px;
@@ -179,7 +210,31 @@
         }
         
         input:checked + .toggle-slider {
-            background-color: #4CAF50;
+            background-color: #2e7d32;
+        }
+
+        /* Foco visible al jugar con el teclado */
+        .square:focus-visible, #reset-btn:focus-visible, .promotion-option:focus-visible, .pie a:focus-visible {
+            outline: 4px solid #1e88e5;
+            outline-offset: -4px;
+        }
+        input:focus-visible + .toggle-slider {
+            outline: 3px solid #1e88e5;
+            outline-offset: 2px;
+        }
+
+        .pie {
+            color: #ddd;
+            font-size: 12px;
+            line-height: 1.5;
+            text-align: center;
+            padding: 0 10px 8px;
+        }
+        .pie p {
+            margin: 2px 0;
+        }
+        .pie a {
+            color: #9ecbff;
         }
         
         input:checked + .toggle-slider:before {
@@ -245,28 +300,39 @@
 </head>
 <body>
     <div id="game-container">
-        <div class="player-turn" id="turn-indicator">Turno de las Blancas</div>
+        <div class="player-turn" id="turn-indicator" aria-live="polite">Turno de las Blancas</div>
         
         <div id="chessboard-container">
-            <div id="chessboard"></div>
+            <div id="chessboard" role="group" aria-label="Tablero: muévete con las flechas y elige con Intro o Espacio"></div>
         </div>
         
         <div id="controls">
             <button id="reset-btn">Reiniciar Juego</button>
             <div class="toggle-container">
-                <span class="toggle-label">Voltear tablero:</span>
+                <span class="toggle-label" id="flip-label">Voltear tablero:</span>
                 <label class="toggle-switch">
-                    <input type="checkbox" id="flip-toggle" checked>
+                    <input type="checkbox" id="flip-toggle" checked aria-labelledby="flip-label">
                     <span class="toggle-slider"></span>
                 </label>
             </div>
         </div>
     </div>
 
-    <div id="promotion-dialog" class="promotion-dialog hidden">
-        <div class="promotion-title">Promocionar peón a:</div>
+    <div id="promotion-dialog" class="promotion-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="promotion-title">
+        <div class="promotion-title" id="promotion-title">Promocionar peón a:</div>
         <div id="promotion-options" class="promotion-options"></div>
     </div>
+
+    <footer class="pie">
+        <p>© 2025-2026 <a href="https://bilateria.org" target="_blank" rel="noopener">Juan José de Haro</a> ·
+            <a href="https://github.com/jjdeharo/ajedrez/releases" target="_blank" rel="noopener">versión 1.0.0</a> ·
+            código <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">AGPL v3</a> ·
+            textos <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" rel="noopener">CC BY-SA 4.0</a> ·
+            <a href="https://github.com/jjdeharo/ajedrez" target="_blank" rel="noopener">código fuente</a></p>
+        <p>Hecho con IA (<a href="https://jjdeharo.github.io/miae/?nivel=4" target="_blank" rel="noopener">nivel 4 del MIAE</a>):
+            programado con DeepSeek en abril de 2025 y preparado para su publicación con Claude Code en octubre de 2026.
+            Icono: «chess-knight» de <a href="https://lucide.dev" target="_blank" rel="noopener">Lucide</a>, ISC.</p>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -290,6 +356,10 @@
             let promotionPending = null;
             let autoFlipBoard = true;
             let statusDisplay = '';
+            // Casilla con el foco del teclado (empieza en e2) y si hay que devolvérselo al redibujar
+            let focusRow = 6;
+            let focusCol = 4;
+            let restoreFocus = false;
             
             // Inicializar el tablero
             function initializeBoard() {
@@ -306,6 +376,7 @@
                 
                 turn = 'white';
                 gameOver = false;
+                statusDisplay = '';
                 enPassantTarget = null;
                 castlingRights = {
                     white: { kingside: true, queenside: true },
@@ -373,16 +444,69 @@
                         // Añadir pieza si existe
                         const piece = board[row][col];
                         if (piece) {
-                            square.textContent = getPieceSymbol(piece);
-                            square.style.color = piece === piece.toUpperCase() ? 'white' : 'black';
+                            // Figura rellena para los dos bandos: el color lo da la clase
+                            square.textContent = getPieceSymbol(piece.toLowerCase());
+                            square.classList.add(piece === piece.toUpperCase() ? 'pieza-blanca' : 'pieza-negra');
                         }
                         
-                        square.addEventListener('click', () => handleSquareClick(row, col));
+                        square.setAttribute('role', 'button');
+                        square.setAttribute('aria-label', describeSquare(row, col));
+                        square.tabIndex = (row === focusRow && col === focusCol) ? 0 : -1;
+                        square.addEventListener('click', () => {
+                            focusRow = row;
+                            focusCol = col;
+                            handleSquareClick(row, col);
+                        });
+                        square.addEventListener('keydown', (e) => handleSquareKey(e, square));
                         chessboard.appendChild(square);
                     }
                 }
+                if (restoreFocus) {
+                    restoreFocus = false;
+                    const again = chessboard.querySelector(`[data-row="${focusRow}"][data-col="${focusCol}"]`);
+                    if (again) again.focus();
+                }
             }
             
+            // Nombre de una casilla para los lectores de pantalla: «e2, peón blanco»
+            function describeSquare(row, col) {
+                const name = 'abcdefgh'[col] + (8 - row);
+                const piece = board[row][col];
+                const reachable = possibleMoves.some(m => m.row === row && m.col === col);
+                if (!piece) return reachable ? `${name}, vacía, se puede mover aquí` : `${name}, vacía`;
+                const names = { p: ['peón', 'm'], r: ['torre', 'f'], n: ['caballo', 'm'], b: ['alfil', 'm'], q: ['reina', 'f'], k: ['rey', 'm'] };
+                const [noun, gender] = names[piece.toLowerCase()];
+                const white = piece === piece.toUpperCase();
+                const colour = white ? (gender === 'f' ? 'blanca' : 'blanco') : (gender === 'f' ? 'negra' : 'negro');
+                let text = `${name}, ${noun} ${colour}`;
+                if (selectedPiece && selectedPiece.row === row && selectedPiece.col === col) text += ', seleccionada';
+                if (reachable) text += ', se puede capturar';
+                return text;
+            }
+
+            // Teclado en el tablero: flechas para moverse (en el sentido en que se ve), Intro o Espacio para elegir
+            function handleSquareKey(e, square) {
+                const squares = Array.from(chessboard.children);
+                const index = squares.indexOf(square);
+                const steps = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -8, ArrowDown: 8 };
+                if (e.key in steps) {
+                    e.preventDefault();
+                    const next = index + steps[e.key];
+                    const sameRow = Math.floor(next / 8) === Math.floor(index / 8);
+                    if (next < 0 || next > 63 || (Math.abs(steps[e.key]) === 1 && !sameRow)) return;
+                    square.tabIndex = -1;
+                    const target = squares[next];
+                    target.tabIndex = 0;
+                    target.focus();
+                    focusRow = Number(target.dataset.row);
+                    focusCol = Number(target.dataset.col);
+                } else if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    restoreFocus = true;
+                    square.click();
+                }
+            }
+
             // Obtener símbolo Unicode para la pieza
             function getPieceSymbol(piece) {
                 const symbols = {
@@ -1048,16 +1172,26 @@
                 
                 pieces.forEach(p => {
                     const option = document.createElement('div');
-                    option.className = 'promotion-option';
-                    option.textContent = getPieceSymbol(p);
-                    option.style.color = color === 'white' ? 'white' : 'black';
+                    option.className = 'promotion-option ' + (color === 'white' ? 'pieza-blanca' : 'pieza-negra');
+                    option.textContent = getPieceSymbol(p.toLowerCase());
                     option.title = pieceNames[p.toUpperCase()];
+                    option.setAttribute('role', 'button');
+                    option.setAttribute('aria-label', pieceNames[p.toUpperCase()]);
+                    option.tabIndex = 0;
+                    option.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            restoreFocus = true;
+                            completePromotion(p);
+                        }
+                    });
                     option.dataset.piece = p;
                     option.addEventListener('click', () => completePromotion(p));
                     promotionOptions.appendChild(option);
                 });
                 
                 promotionDialog.classList.remove('hidden');
+                promotionOptions.firstElementChild.focus();
             }
             
             // Completar la promoción
@@ -1116,15 +1250,17 @@
             
             // Verificar estado del juego (jaque mate o ahogado)
             function checkGameStatus() {
-                const opponentColor = turn === 'white' ? 'black' : 'white';
-                const hasLegalMoves = hasAnyLegalMove(opponentColor);
+                // Se llama con el turno ya cambiado: se mira el bando que tiene que mover ahora
+                // (antes miraba al que acababa de mover y nunca detectaba el mate ni el ahogado)
+                const colorToMove = turn;
+                const hasLegalMoves = hasAnyLegalMove(colorToMove);
                 
-                if (isKingInCheck(board, opponentColor)) {
+                if (isKingInCheck(board, colorToMove)) {
                     if (!hasLegalMoves) {
                         gameOver = true;
-                        statusDisplay = `¡Jaque mate! Ganador: ${opponentColor === 'white' ? 'Negras' : 'Blancas'}`;
+                        statusDisplay = `¡Jaque mate! Ganador: ${colorToMove === 'white' ? 'Negras' : 'Blancas'}`;
                     } else {
-                        statusDisplay = `¡Jaque! ${opponentColor === 'white' ? 'Blancas' : 'Negras'} en jaque`;
+                        statusDisplay = `¡Jaque! ${colorToMove === 'white' ? 'Blancas' : 'Negras'} en jaque`;
                     }
                 } else if (!hasLegalMoves) {
                     gameOver = true;
@@ -1187,7 +1323,7 @@
             function updateGameInfo() {
                 turnIndicator.textContent = turn === 'white' ? 'Turno de las Blancas' : 'Turno de las Negras';
                 
-                if (gameOver) {
+                if (gameOver || statusDisplay.startsWith('¡Jaque!')) {
                     turnIndicator.textContent = statusDisplay;
                 }
             }
